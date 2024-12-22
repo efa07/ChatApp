@@ -1,8 +1,10 @@
-import User from "../models/User";
+import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+import {generateToken} from "../lib/utilis.js";
+
 
 export const signup = async (req,res) => {
-    const {fulName, email, password} = req.body;
+    const {fullName, email, password} = req.body;
     try {
         if (password.lenght < 6) {
             return res.status(400).json({message: "Password must be at least 6 characters long"});
@@ -26,19 +28,49 @@ export const signup = async (req,res) => {
             res.status(201).json({message: "User created successfully"});
         }
         else {
-            return res.status(400).json({message: "Failed to create user"});
+         res.status(400).json({message: "Failed to create user Invalid input!"});
         }
     } catch (error) {
         console.log(error);
+        res.status(500).json({message: "Internal server error"});
     }
 }
 
-export const login = (req,res) => {
-    res.send("login page");
+export const login = async (req,res) => {
+    const {email, password} = req.body;
+    try {
+        const user = await User.findOne({email})
+        if (!user) {
+            return res.status(400).json({message: "Invalid email or password"});
+        }
+        const isPassMatch = await bcrypt.compare(password, user.password);
+        if (!isPassMatch) {
+            return res.status(400).json({message: "Invalid email or password"});
+        }
+        generateToken(user._id, res);
+
+        res.status(200).json({
+            message: "Login successful",
+            user: {
+                id: user._id,
+                fullName: user.fullName,
+                email: user.email
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Internal server error"});
+    }
     
 }
 
 export const logout = (req,res) => {
-    res.send("logout page");
+    try {
+        res.clearCookie("token");
+        res.status(200).json({message: "Logout successful"});
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Internal server error"});
+    }
       
 }
