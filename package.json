@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "nodemon": "^3.1.9"
+  },
+  "scripts": {
+    "start": "concurrently \"npm run start-back\" \"npm run start-front\"",
+    "start-back": "cd back && nodemon index.js",
+    "start-front": "cd front && npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.1"
+  }
+}

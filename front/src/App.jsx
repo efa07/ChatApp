@@ -10,6 +10,7 @@ import { Routes, Route } from 'react-router-dom'
 import { useAuthStore } from './store/useAuthStore'
 import {Loader} from 'lucide-react'
 import { Navigate } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 
 const App = () => {
   const {authUser,checkAuth,isCheckingAuth} =  useAuthStore()
@@ -18,7 +19,6 @@ const App = () => {
     checkAuth()
   }, [checkAuth])
 
-  console.log({authUser})
   if (isCheckingAuth && !authUser) {
     return (
       <div className='flex justify-center items-center h-screen'>
@@ -27,17 +27,23 @@ const App = () => {
     )
   }
 
+
   return (
     <>
-    <Navbar />
+    {/* Navbar is displayed only if the user is authenticated */}
+    {
+      authUser ? <Navbar /> : null
+    }
+
     <Routes>
     <Route path="/"  element={authUser ? <Home /> : <Navigate to="/login" />} />
-    <Route path="/signup" element={<SignUpPage />} />
-    <Route path="/login" element={<LoginPage />} />
-    <Route path="/profile" element={<ProfilePage />} />
-    <Route path="/settings" element={<Settings />} />
-    <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
+    <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />}  />
+    <Route path="/login" element={! authUser ? <LoginPage /> : <Navigate to="/" />} />
+    <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />}  />
+    <Route path="/settings" element={authUser ? <Settings /> : <Navigate to="/login" />} />
     </Routes>
+    <Toaster />
+
     </>
   )
 }
