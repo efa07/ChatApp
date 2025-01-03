@@ -73,8 +73,11 @@ export const logout = (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ message: "Unauthorized access" });
+        }
         const { profilePic } = req.body;
-        const userId = req.user?._id;
+        const userId = req.user._id;
 
         if (!profilePic) {
             return res.status(400).json({ message: "Profile picture is required" });
@@ -98,9 +101,10 @@ export const updateProfile = async (req, res) => {
             profilePic: updatedUser.profilePic,
         });
     } catch (error) {
-        console.error("Update Profile Error: ", error.message);
-        res.status(500).json({ message: "Internal server error" });
+        console.error("Update Profile Error: ", error.stack || error.message || error);
+        res.status(500).json({ message: "Internal server error", error: error.message || "Unknown error" });
     }
+    
 };
 
 export const checkAuth = (req, res) => {

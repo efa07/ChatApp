@@ -1,9 +1,42 @@
-import React from 'react'
+import { useState } from 'react'
 import { useAuthStore } from '../store/useAuthStore'
 import { Camera ,User,Mail } from 'lucide-react'
 
 const ProfilePage = () => {
   const { authUser, isupdatingProfile, updateProfile } = useAuthStore()
+  const [selectedImg, setSelectedImg] = useState(null)
+
+  const handleImageUpload = async (e) => {
+    const imgfile = e.target.files[0];
+  
+    if (!imgfile) return;
+  
+    // if (!imgfile.type.startsWith("image/")) {
+    //   alert("Please upload a valid image file.");
+    //   return;
+    // }
+  
+    // if (imgfile.size > 4 * 1024 * 1024) {
+    //   alert("File size exceeds 2MB!");
+    //   return;
+    // }
+  
+    const reader = new FileReader();
+    reader.readAsDataURL(imgfile);
+    reader.onload = async () => {
+      const base64Image = reader.result;
+      setSelectedImg(base64Image);
+      try {
+        await updateProfile({ profilePic: base64Image });
+      } catch (error) {
+        alert("Failed to update profile picture. Please try again.");
+      }
+    };
+    reader.onerror = () => {
+      alert("Error reading the file. Please try again.");
+    };
+  };
+  
   return (
     <div className='h-screen pt-20'>
       <div className='max-w-2xl mx-auto p-4 py-8'>
@@ -17,7 +50,7 @@ const ProfilePage = () => {
           <div className='flex flex-col items-center gap-4'>
             <div className='relative'>
               <img
-                src={authUser?.profilePic || '/public/hacker.png'}
+                src={selectedImg || authUser?.profilePic || '/public/hacker.png'}
                 alt='avatar'
                 className='size-32 rounded-full object-cover border-4'
               />
@@ -30,7 +63,7 @@ const ProfilePage = () => {
                   type='file'
                   id='avatar'
                   className='hidden'
-                  // onChange={handleImageUpload}
+                  onChange={handleImageUpload}
                   disabled={isupdatingProfile}
                 />
               </label>
